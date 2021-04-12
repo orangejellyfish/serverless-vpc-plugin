@@ -130,15 +130,17 @@ class ServerlessVpcPlugin {
     }
 
     if (createNatGateway) {
-      if (typeof createNatGateway !== 'boolean' && typeof createNatGateway !== 'number') {
+      if (typeof createNatGateway !== 'boolean' && typeof createNatGateway !== 'number' && !Array.isArray(createNatGateway)) {
         throw new this.serverless.classes.Error(
-          'createNatGateway must be either a boolean or a number',
+          'createNatGateway must be either a boolean, number or array',
         );
       }
       if (typeof createNatGateway === 'boolean') {
         createNatGateway = createNatGateway ? numZones : 0;
       } else if (createNatGateway > numZones) {
         createNatGateway = numZones;
+      } else if (Array.isArray(createNatGateway)){
+        createNatGateway = createNatGateway;
       }
       if (createNatGateway > DEFAULT_VPC_EIP_LIMIT) {
         this.serverless.cli.log(

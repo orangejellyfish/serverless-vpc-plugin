@@ -54,7 +54,42 @@ function buildNatGateway(position) {
   };
 }
 
+/**
+ * Build a NatGateway in a given AZ with specfied EIP attachement
+ *
+ * @param {Number} position
+ * @return {Object}
+ */
+ function buildNatGatewayWithEIP(position, eipAllocationId) {
+  const cfName = `NatGateway${position}`;
+  const subnet = `${PUBLIC_SUBNET}Subnet${position}`;
+  return {
+    [cfName]: {
+      Type: 'AWS::EC2::NatGateway',
+      Properties: {
+        AllocationId: eipAllocationId,
+        SubnetId: {
+          Ref: subnet,
+        },
+        Tags: [
+          {
+            Key: 'Name',
+            Value: {
+              'Fn::Sub': `\${AWS::StackName}-\${${subnet}.AvailabilityZone}`,
+            },
+          },
+          {
+            Key: 'Network',
+            Value: 'Public',
+          },
+        ],
+      },
+    },
+  };
+}
+
 module.exports = {
   buildEIP,
   buildNatGateway,
+  buildNatGatewayWithEIP,
 };

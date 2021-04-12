@@ -1,5 +1,5 @@
 const { APP_SUBNET, PUBLIC_SUBNET, DB_SUBNET } = require('./constants');
-const { buildEIP, buildNatGateway } = require('./natgw');
+const { buildEIP, buildNatGateway, buildNatGatewayWithEIP } = require('./natgw');
 const { buildSubnet } = require('./subnets');
 const { buildRoute, buildRouteTable, buildRouteTableAssociation } = require('./routes');
 
@@ -32,8 +32,12 @@ function buildAvailabilityZones(
   }
 
   const resources = {};
-
-  if (numNatGateway > 0) {
+  if (Array.isArray(numNatGateway)){
+    for (let index = 0; index < numNatGateway.length; index += 1) {
+      Object.assign(resources, buildNatGatewayWithEIP(index + 1, numNatGateway[index]));
+    }
+  }
+  else if (numNatGateway > 0) {
     for (let index = 1; index <= numNatGateway; index += 1) {
       Object.assign(resources, buildEIP(index), buildNatGateway(index));
     }
@@ -63,6 +67,8 @@ function buildAvailabilityZones(
     const params = {};
     if (numNatGateway > 0) {
       params.NatGatewayId = `NatGateway${(index % numNatGateway) + 1}`;
+    } else if (Array.isArray(numNatGateway)) {
+      params.NatGatewayId = `NatGateway${(index % numNatGateway.length) + 1}`;
     } else if (createNatInstance) {
       params.InstanceId = 'NatInstance';
     }
